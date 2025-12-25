@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"himathsamarakoon.com/day3"
+	"himathsamarakoon.com/day4"
 )
 
 func main() {
-	fmt.Println(day3.Solution())
+	fmt.Println(day4.Solution())
 	// day2.Solution()
 	// day1.Solution2()
 }
