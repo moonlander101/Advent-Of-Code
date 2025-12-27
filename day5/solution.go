@@ -29,7 +29,7 @@ func Solution() int {
 		ids = append(ids, n)
 	}
 
-	return Part3(ranges, ids)
+	return Part2b(ranges, ids)
 }
 
 func checkIfNumInRange(num int, r string) bool {
@@ -64,7 +64,23 @@ func includes(a int, arr []int) bool {
 	return false
 }
 
-// TODO: Merge and check difference for eacg range
+// Naive Approach
+func Part2(ranges []string, ids []int) int {
+	freshItems := []int{}
+	for _, r := range ranges {
+		start, _ := strconv.Atoi(r[:strings.Index(r, "-")])
+		end, _ := strconv.Atoi(r[strings.Index(r, "-")+1:])
+		for i := start; i <= end; i++ {
+			if includes(i, freshItems) {
+				continue
+			}
+			freshItems = append(freshItems, i)
+		}
+	}
+	return len(freshItems)
+}
+
+// merges ranges that may be overlapping
 func mergeRanges(ranges []string) []string {
 	onlyOutside := false
 	for !onlyOutside {
@@ -123,22 +139,8 @@ func mergeRanges(ranges []string) []string {
 	return ranges
 }
 
-func Part2(ranges []string, ids []int) int {
-	freshItems := []int{}
-	for _, r := range ranges {
-		start, _ := strconv.Atoi(r[:strings.Index(r, "-")])
-		end, _ := strconv.Atoi(r[strings.Index(r, "-")+1:])
-		for i := start; i <= end; i++ {
-			if includes(i, freshItems) {
-				continue
-			}
-			freshItems = append(freshItems, i)
-		}
-	}
-	return len(freshItems)
-}
-
-func Part3(ranges []string, ids []int) int {
+// More efficient Approach with merging
+func Part2b(ranges []string, ids []int) int {
 	finalRanges := mergeRanges(ranges)
 	total := 0
 	for _, r := range finalRanges {
