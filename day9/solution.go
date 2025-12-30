@@ -18,7 +18,7 @@ func Solution() int {
 		points = append(points, Point{x: x, y: y})
 	}
 
-	return Part1(points)
+	return Part2(points)
 }
 
 type Point struct {
@@ -62,78 +62,197 @@ func Part1(points []Point) int {
 	return maxArea
 }
 
-type Rect struct {
-	edges []Point // diagonal edges
-	area  int
-}
+func checkIfInEdge(p Point, edge []Point) bool {
+	p1 := edge[0]
+	p2 := edge[1]
+	if p1.x == p2.x {
+		if p.x != p1.x {
+			return false
+		}
+		m := p1.y
+		mi := p2.y
+		if m < mi {
+			m = p2.y
+			mi = p1.y
+		}
 
-func findRanges(points []Point) {
-	colRanges := map[int][]int{}
-	rowRanges := map[int][]int{}
+		if p.y >= mi && p.y <= m {
+			return true
+		}
+	} else {
+		if p.y != p1.y {
+			return false
+		}
+		m := p1.x
+		mi := p2.x
+		if m < mi {
+			m = p2.x
+			mi = p1.x
+		}
 
-	for i := 0; i < len(points)-1; i++ {
-		p1 := points[i]
-		p2 := points[i+1]
-
-		if p1.x == p2.x {
-			val, ok := rowRanges[p1.x]
-			if ok {
-				minVal := val[0]
-				maxVal := val[1]
-
-				if p1.y < minVal {
-					minVal = p1.y
-				}
-				if p2.y < minVal {
-					minVal = p2.y
-				}
-
-				if maxVal < p1.y {
-					maxVal = p1.y
-				}
-				if maxVal < p2.y {
-					maxVal = p2.y
-				}
-
-				rowRanges[p1.x] = []int{minVal, maxVal}
-			} else {
-				minVal := 0
-				if p1.y < p2.y {
-					minVal = p1.y
-				} else {
-					minVal = p2.y
-				}
-				maxVal := 0
-				if minVal == p1.y {
-					maxVal = p2.y
-				} else {
-					maxVal = p1.y
-				}
-				rowRanges[p1.x] = []int{minVal, maxVal}
-			}
-		} else if p1.y == p2.y {
-			val, ok := colRanges[p1.y]
-			if ok {
-				minVal := val[0]
-				maxVal := val[1]
-
-				if p1.x < minVal {
-					minVal = p1.x
-				}
-				if p2.x < minVal {
-					minVal = p2.x
-				}
-
-				if maxVal < p1.x {
-					maxVal = p1.x
-				}
-				if maxVal < p2.x {
-					maxVal = p2.x
-				}
-				colRanges[p1.y] = []int{minVal, maxVal}
-			}
-		} else {
-			panic("Diagonal transition is not allowed in input")
+		if p.x >= mi && p.x <= m {
+			return true
 		}
 	}
+	return false
+}
+
+func checkIfInside(p Point, edges [][]Point) bool {
+	// println("Checking point", p.x, p.y)
+	cuts := 0
+	for _, e := range edges {
+		p1 := e[0]
+		p2 := e[1]
+		// println("Edge from", p1.x, p1.y, "to", p2.x, p2.y)
+
+		if checkIfInEdge(p, e) {
+			// println("Point on the edge, so Valid")
+			return true
+		}
+
+		if p1.x == p2.x {
+			// println("Vertical edge cannot intersect")
+			continue
+		} else {
+			// println("Horizontal edge")
+			m := p1.x
+			mi := p2.x
+			if m < mi {
+				m = p2.x
+				mi = p1.x
+			}
+			if p.x >= m || p.x < mi {
+				// println("Not aligned with horizontal edge (", m, mi, ")", ", Ray at x: ", p.x)
+				continue
+			}
+			if p1.y < p.y {
+				// println("Ray crosses horizontal edge")
+				cuts += 1
+			}
+		}
+	}
+	// println("Total cuts:", cuts, "Inside:", cuts%2 != 0)
+	return cuts%2 != 0
+}
+
+func rectHasBoundaryInside(pa, pb Point, edges [][]Point) bool {
+	minX, maxX := pa.x, pb.x
+	if minX > maxX {
+		minX, maxX = maxX, minX
+	}
+	minY, maxY := pa.y, pb.y
+	if minY > maxY {
+		minY, maxY = maxY, minY
+	}
+
+	for _, e := range edges {
+		a, b := e[0], e[1]
+
+		if a.x == b.x {
+			// vertical edge x = a.x, y in [y1,y2]
+			x := a.x
+			y1, y2 := a.y, b.y
+			if y1 > y2 {
+				y1, y2 = y2, y1
+			}
+
+			// if it lies on rectangle border, allow it
+			if x == minX || x == maxX {
+				continue
+			}
+
+			// does it go through rectangle interior
+			if x > minX && x < maxX {
+				// overlap with (minY,maxY)
+				if y2 > minY && y1 < maxY {
+					return true
+				}
+			}
+		} else {
+			// horizontal edge y = a.y, x in [x1,x2]
+			y := a.y
+			x1, x2 := a.x, b.x
+			if x1 > x2 {
+				x1, x2 = x2, x1
+			}
+
+			// if it lies on rectangle border, allow it
+			if y == minY || y == maxY {
+				continue
+			}
+
+			// does it go through rectangle interior
+			if y > minY && y < maxY {
+				// overlap with (minX,maxX)
+				if x2 > minX && x1 < maxX {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+func Part2(points []Point) int {
+	edges := [][]Point{}
+	l := len(points)
+	for i := 0; i < len(points); i++ {
+		p1 := points[i]
+		p2 := points[(i+1)%l]
+		if p1.x == p2.x {
+			// println("Horizontal line")
+			edges = append(edges, []Point{p1, p2})
+		} else if p1.y == p2.y {
+			// println("Vertical line")
+			edges = append(edges, []Point{p1, p2})
+		} else {
+			panic("Diagonal line not supported")
+		}
+	}
+
+	maxArea := 0
+	for i := range points {
+		// println("===========")
+		for j := i + 1; j < len(points); j++ {
+			pa := points[i]
+			pb := points[j]
+			// println("Consider pa: ", pa.x, pa.y)
+			// println("Consider pb: ", pb.x, pb.y)
+			pc := Point{x: pa.x, y: pb.y}
+			pd := Point{x: pb.x, y: pa.y}
+
+			cInArea := checkIfInside(pc, edges)
+			dInArea := checkIfInside(pd, edges)
+			println(cInArea, dInArea)
+			if !cInArea || !dInArea {
+				// println("Invalid rect")
+				continue
+			}
+
+			if rectHasBoundaryInside(pa, pb, edges) {
+				continue
+			}
+
+			dx := pa.x - pb.x
+			if dx < 0 {
+				dx *= -1
+			}
+			dx += 1
+
+			dy := pa.y - pb.y
+			if dy < 0 {
+				dy *= -1
+			}
+			dy += 1
+
+			area := dx * dy
+
+			if maxArea < area {
+				maxArea = area
+			}
+		}
+	}
+
+	return maxArea
 }
