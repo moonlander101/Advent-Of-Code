@@ -10,7 +10,8 @@ go 1.23.3
 // require himathsamarakoon.com/day6 v0.0.0
 // require himathsamarakoon.com/day7 v0.0.0
 // require himathsamarakoon.com/day8 v0.0.0
-require himathsamarakoon.com/day9 v0.0.0
+// require himathsamarakoon.com/day9 v0.0.0
+require himathsamarakoon.com/day10 v0.0.0
 
 
 replace himathsamarakoon.com/day1 => ../day1
@@ -22,3 +23,4 @@ replace himathsamarakoon.com/day6 => ../day6
 replace himathsamarakoon.com/day7 => ../day7
 replace himathsamarakoon.com/day8 => ../day8
 replace himathsamarakoon.com/day9 => ../day9
+replace himathsamarakoon.com/day10 => ../day10

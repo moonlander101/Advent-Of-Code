@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	// "himathsamarakoon.com/day6"
-	"himathsamarakoon.com/day9"
+	"himathsamarakoon.com/day10"
 )
 
 func main() {
-	fmt.Println(day9.Solution())
+	fmt.Println(day10.Solution())
 }
